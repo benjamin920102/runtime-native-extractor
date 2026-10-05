@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<project name="runtime-native-extractor" default="build" basedir=".">
+    <property name="build.dir" value="build"/>
+    <property name="src.dir" value="src"/>
+    <property name="target.jar" value="${build.dir}/extractor.jar"/>
+    <target name="build" depends="jar"/>
+    <target name="compile">
+        <mkdir dir="${build.dir}/classes"/>
+        <javac srcdir="${src.dir}" destdir="${build.dir}/classes" source="8" target="8" includeantruntime="false"/>
+    </target>
+    <target name="jar" depends="compile">
+        <jar destfile="${target.jar}">
+            <fileset dir="${build.dir}/classes" includes="*.class"/>
+            <manifest>
+                <attribute name="Main-Class" value="ClassFileExtractor"/>
+                <attribute name="Agent-Class" value="ClassFileExtractor"/>
+                <attribute name="Can-Retransform-Classes" value="true"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="clean"><delete dir="${build.dir}"/></target>
+</project>

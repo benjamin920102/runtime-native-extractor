@@ -1,0 +1,22 @@
+name: build-windows
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  windows-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build packaged runtime
+        shell: pwsh
+        run: .\build-windows.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runtime-native-extractor-windows-x64
+          path: dist/**
