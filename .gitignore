@@ -1,5 +1,7 @@
 *.class
 *.jar
+# Gradle Wrapper JAR is source tooling and must be committed when present.
+!recovery-jvm/gradle/wrapper/gradle-wrapper.jar
 
 /build
 /out
