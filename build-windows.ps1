@@ -66,7 +66,9 @@ function Invoke-RecoveryGradle {
     if ((Test-Path $wrapper) -and (Test-Path $wrapperJar)) {
         Write-Host "Using Gradle Wrapper."
         & $wrapper @GradleArgs
-        return $LASTEXITCODE
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) { throw "Gradle recovery build failed ($exitCode)" }
+        return
     }
 
     # GitHub Actions installs Gradle explicitly; this also supports developers
@@ -75,7 +77,9 @@ function Invoke-RecoveryGradle {
     if ($gradle) {
         Write-Warning "gradle-wrapper.jar is missing; using Gradle from PATH: $($gradle.Source)"
         & $gradle.Source @GradleArgs
-        return $LASTEXITCODE
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) { throw "Gradle recovery build failed ($exitCode)" }
+        return
     }
 
     # Last-resort bootstrap for a clean Windows machine: download the exact
@@ -110,13 +114,16 @@ function Invoke-RecoveryGradle {
     }
 
     & $gradleBat.FullName @GradleArgs
-    return $LASTEXITCODE
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) { throw "Gradle recovery build failed ($exitCode)" }
 }
 
 Push-Location $Recovery
 try {
-    $gradleExitCode = Invoke-RecoveryGradle -RecoveryDir $Recovery
-    if ($gradleExitCode -ne 0) { throw "Gradle recovery build failed ($gradleExitCode)" }
+    # Do not assign this function call to a variable. Native-process stdout is
+    # intentionally allowed to stream to the console; the function itself
+    # validates $LASTEXITCODE and throws only on a real Gradle failure.
+    Invoke-RecoveryGradle -RecoveryDir $Recovery
 } finally { Pop-Location }
 
 $Runtime = Join-Path $Dist "runtime"
